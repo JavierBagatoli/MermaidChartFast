@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Generador de Diagrama Sequence</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      color: #90caf9;
+    }
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    input[type="text"] {
+      padding: 8px;
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #444;
+      border-radius: 4px;
+      flex: 1;
+    }
+    input[type="checkbox"] {
+      transform: scale(1.2);
+    }
+    label.warning {
+      flex-basis: 100%;
+      color: #ffb6c1;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      margin-top: 20px;
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 10px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Declarar Actores</h2>
+  <div id="actors"></div>
+
+  <h2>Agregar Interacciones</h2>
+  <div id="interactions"></div>
+
+  <h2>Diagrama Generado</h2>
+  <textarea id="output" readonly></textarea>
+
+  <script>
+    const actorsDiv = document.getElementById('actors');
+    const interactionsDiv = document.getElementById('interactions');
+    const output = document.getElementById('output');
+
+    function getDeclaredActors() {
+      const names = [];
+      Array.from(actorsDiv.children).forEach(row => {
+        const [acronymInput, nameInput] = row.querySelectorAll('input');
+        const acronym = acronymInput.value.trim();
+        if (acronym) names.push(acronym);
+      });
+      return names;
+    }
+
+    function addActorRow() {
+      const row = document.createElement('div');
+      row.className = 'input-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Acrónimo">
+        <input type="text" placeholder="Nombre completo">
+      `;
+      actorsDiv.appendChild(row);
+
+      row.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', generateOutput);
+      });
+    }
+
+    function addInteractionRow() {
+      const row = document.createElement('div');
+      row.className = 'input-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Origen">
+        <input type="text" placeholder="Destino">
+        <input type="text" placeholder="Mensaje">
+        <label><input type="checkbox"> --&gt;&gt;</label>
+        <input type="text" placeholder="Comentario (opcional)" style="flex-basis: 100%;">
+        <label class="warning" style="display:none;">No se han encontrado actores o participantes</label>
+      `;
+      interactionsDiv.appendChild(row);
+
+      row.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', generateOutput);
+      });
+    }
+
+    function generateOutput() {
+      let text = "sequenceDiagram\n";
+      const declared = getDeclaredActors();
+
+      // Generar actores
+      Array.from(actorsDiv.children).forEach((row, idx) => {
+        const [acronymInput, nameInput] = row.querySelectorAll('input');
+        const acronym = acronymInput.value.trim();
+        const name = nameInput.value.trim();
+        if (acronym && name) {
+          const type = idx === 0 ? 'actor' : 'participant';
+          text += `  ${type} ${acronym} as ${name}\n`;
+        }
+      });
+
+      text += `\n`;
+      // Generar interacciones
+      Array.from(interactionsDiv.children).forEach(row => {
+        const [fromInput, toInput, messageInput, checkbox, commentInput] = row.querySelectorAll('input');
+        const label = row.querySelector('label.warning');
+        const from = fromInput.value.trim();
+        const to = toInput.value.trim();
+        const message = messageInput.value.trim();
+        const comment = commentInput.value.trim();
+        const arrow = checkbox.checked ? '-->>' : '->>';
+
+        if ((from && !declared.includes(from)) || (to && !declared.includes(to))) {
+          label.style.display = 'block';
+        } else {
+          label.style.display = 'none';
+        }
+
+        if (comment) {
+          var textComent = comment;
+
+          if(textComent.includes('//')){
+            textComent = textComent.replace('//','');
+            text += '\n';
+          }
+
+          text += `${textComent}\n`;
+        }
+
+        if (from && to) {
+          text += `  ${from} ${arrow} ${to}: ${message}\n`;
+        }
+      });
+
+      output.value = text;
+
+      // Agregar nuevas filas automáticamente
+      const lastActorRow = actorsDiv.lastChild;
+      if (lastActorRow) {
+        const inputs = lastActorRow.querySelectorAll('input');
+        if ([...inputs].every(input => input.value.trim() !== '')) {
+          addActorRow();
+        }
+      }
+
+      const lastInteractionRow = interactionsDiv.lastChild;
+      if (lastInteractionRow) {
+        const inputs = lastInteractionRow.querySelectorAll('input');
+        if ([...inputs].slice(0, 3).every(input => input.value.trim() !== '')) {
+          addInteractionRow();
+        }
+      }
+    }
+
+    // Inicializar con una fila
+    addActorRow();
+    addInteractionRow();
+  </script>
+</body>
+</html>

@@ -28,7 +28,14 @@
       flex: 1;
     }
     input[type="checkbox"] {
-      transform: scale(1.2);
+      transform: scale(1.5);
+      margin-top: 0.6rem;
+    }
+    #arrow{
+      margin-top: -0.3rem;
+    }
+    .input-short{
+      max-width: 15rem;
     }
     label.warning {
       flex-basis: 100%;
@@ -75,8 +82,8 @@
       const row = document.createElement('div');
       row.className = 'input-row';
       row.innerHTML = `
-        <input type="text" placeholder="Acrónimo">
-        <input type="text" placeholder="Nombre completo">
+        <input class="input-short" type="text" placeholder="Acrónimo">
+        <input class="input-short" type="text" placeholder="Nombre completo">
       `;
       actorsDiv.appendChild(row);
 
@@ -89,10 +96,14 @@
       const row = document.createElement('div');
       row.className = 'input-row';
       row.innerHTML = `
-        <input type="text" placeholder="Origen">
-        <input type="text" placeholder="Destino">
+        <input class="input-short" type="text" placeholder="Origen">
+        <input class="input-short" type="text" placeholder="Destino">
         <input type="text" placeholder="Mensaje">
-        <label><input type="checkbox"> --&gt;&gt;</label>
+        <div>
+          <input type="checkbox">
+          <label id="arrow"> ⇢</label>
+        </div>
+        
         <input type="text" placeholder="Comentario (opcional)" style="flex-basis: 100%;">
         <label class="warning" style="display:none;">No se han encontrado actores o participantes</label>
       `;
@@ -165,7 +176,7 @@
       const lastInteractionRow = interactionsDiv.lastChild;
       if (lastInteractionRow) {
         const inputs = lastInteractionRow.querySelectorAll('input');
-        if ([...inputs].slice(0, 3).every(input => input.value.trim() !== '')) {
+        if ([...inputs].slice(0, 3).every(input => input.value.trim() !== '') || [...inputs].slice(3, 4).every(input => input.value.trim() !== '')) {
           addInteractionRow();
         }
       }

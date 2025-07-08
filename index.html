@@ -176,7 +176,7 @@
       const lastInteractionRow = interactionsDiv.lastChild;
       if (lastInteractionRow) {
         const inputs = lastInteractionRow.querySelectorAll('input');
-        if ([...inputs].slice(0, 3).every(input => input.value.trim() !== '') || [...inputs].slice(3, 4).every(input => input.value.trim() !== '')) {
+        if ([...inputs].slice(0, 3).every(input => input.value.trim() !== '')) {
           addInteractionRow();
         }
       }
